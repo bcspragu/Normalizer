@@ -10,6 +10,7 @@ import (
 	//"math"
 	"os"
 	"path/filepath"
+	"time"
 
 	_ "code.google.com/p/vp8-go/webp"
 	_ "image/jpeg"
@@ -20,6 +21,7 @@ var smallestHeight = 10000
 var imageCount = 0
 
 var jobs chan string
+
 var results chan error
 var up chan bool
 
@@ -50,10 +52,12 @@ func worker(id int, jobs <-chan string, results chan<- error, up chan<- bool) {
 			return
 		}
 		w.Close()
+		time.Sleep(10 * time.Millisecond)
 		if err != nil {
 			results <- err
 			return
 		}
+		results <- nil
 	}
 }
 
@@ -80,7 +84,9 @@ func main() {
 	// Finally we collect all the results of the work.
 	for i := 0; i < imageCount; i++ {
 		err := <-results
-		fmt.Println("Error resizing:", err)
+		if err != nil {
+			fmt.Println("Error resizing:", err)
+		}
 	}
 }
 
@@ -97,6 +103,7 @@ func WalkFunc(path string, info os.FileInfo, err error) error {
 		if img.Bounds().Dy() < smallestHeight {
 			smallestHeight = img.Bounds().Dy()
 		}
+		imgFile.Close()
 	}
 	return nil
 }
