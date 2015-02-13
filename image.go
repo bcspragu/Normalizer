@@ -45,11 +45,11 @@ func worker(id int, jobs <-chan string, results chan<- error, up chan<- bool) {
 			return
 		}
 		err = png.Encode(w, img)
-		w.Close()
 		if err != nil {
 			results <- err
 			return
 		}
+		w.Close()
 		if err != nil {
 			results <- err
 			return
